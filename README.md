@@ -5,6 +5,8 @@ Final year project to help visually impaired people
 
 ## Running IPCamMask.py
 
+Recieves transmitted HTTP stream over the network from IPWebCam App to an IP address and runs the Mask detection model based on the ```MaskDetector/detect_mask_video.py``` file. 
+
 1. Depends on 
 
 ```
@@ -32,4 +34,8 @@ MaskDetector/face_detector/res10_300x300_ssd_iter_140000.caffemodel
    vs = VideoStream(0).start()
    ```
 
-   for laptop webcam stream or change the IP address and port of the src URL to one that matches in your phone's IPCam server. Not using RSTP, works well enough with http stream.
+   for laptop webcam stream 
+   
+   or 
+   
+   change the IP address and port of the src URL to one that matches in your phone's IPCam server. Not using RSTP, works well enough with http stream.
