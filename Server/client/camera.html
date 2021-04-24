@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>WebSocket demo</title>
+  <link rel="stylesheet" href="camera.css">
+</head>
+
+<body>
+  <div id="container">
+    <video autoplay="true" id="videoElement"></video>
+  </div>
+  <button id="capture" disabled>Start</button>
+  <canvas id="canvas" width=320 height=240 hidden></canvas>
+
+  <button type="button" id="pingBtn" onclick="pingServer()" disabled>Send PING</button>
+  <ul id="serverResp"><li id="serverRespItem"></li></ul>
+  <script src="camera.js"></script>
+</body>
+
+</html>
