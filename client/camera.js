@@ -1,7 +1,7 @@
 // conda activate blindAsst && cd D:\src\Blind-Assistance\cynosure
 const host = "ws://127.0.0.1"
 const port = "5678"
-const fps  = 2
+const fps  = 3
 const timeInterval = 1000/fps 
 
 var ws = new WebSocket(host+":"+port)
@@ -26,12 +26,14 @@ function pingServer(){
   ws.send("PING");
   console.log("Sent PING to Server")
   ws.onmessage = function (event) {
-    var respDiv = document.getElementById('serverResp'),
-        message = document.createElement('li'),
-        content = document.createTextNode(event.data);
+    // var respDiv = document.getElementById('serverResp'),
+    //     message = document.createElement('li'),
+    //     content = document.createTextNode(event.data);
     
-    message.appendChild(content);
-    respDiv.appendChild(message);
+    // message.appendChild(content);
+    // respDiv.appendChild(message);
+    var item = document.getElementById("serverRespItem")
+    item.innerHTML = event.data
     console.log("Received " + event.data + " from Server")
   };
 }
