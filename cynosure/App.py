@@ -9,7 +9,7 @@ import numpy as np
 import cv2
 
 sys.path.append(".")
-from face_detector import face_detector as FD
+from mask_detector import mask_detector as MD
 
 wsHost = "35.153.98.12"
 wsPort = 5678
@@ -35,7 +35,7 @@ async def echoReceived(websocket, path):
 
 		if message != "PING":
 			img = processImg(imageData)
-			label = FD.mask_dist(img)
+			label = MD.mask_dist(img)
 			# cv2.imshow('window',img)
 			# cv2.waitKey(1)
 			
@@ -52,11 +52,10 @@ def processImg(imageData):
   return cv2.imdecode(jpg_as_np, flags=1)
 
 def init_models():
-  FD.init_face_detector()
+  MD.init_face_detector()
   print("Initialised models")
   
 init_models()
-FD.test()
 
 start_server = websockets.serve(echoReceived, port=wsPort)
 asyncio.get_event_loop().run_until_complete(start_server)

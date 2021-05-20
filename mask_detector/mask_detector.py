@@ -126,16 +126,12 @@ def init_face_detector():
 
   # load our serialized face detector model from disk
   print("[INFO] loading face detector model...")
-  prototxtPath = "face_detector/deploy.prototxt"
-  weightsPath = "face_detector/res10_300x300_ssd_iter_140000.caffemodel"
+  prototxtPath = "mask_detector/deploy.prototxt"
+  weightsPath = "mask_detector/res10_300x300_ssd_iter_140000.caffemodel"
   faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
   # load the face mask detector model from disk
   print("[INFO] loading face mask detector model...")
-  maskNet = load_model("face_detector/mask_detector.model")
+  maskNet = load_model("mask_detector/mask_detector.model")
 
   print("faceNet in init_face_detector is", faceNet)
-
-def test():
-  global faceNet, maskNet
-  print("faceNet in test is", faceNet)
