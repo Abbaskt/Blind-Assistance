@@ -1,44 +1,35 @@
 // conda activate blindAsst && cd D:\src\Blind-Assistance\cynosure
-const host = "http://127.0.0.1"
-const port = "5678"
-const fps = 1
-const timeInterval = 1000 / fps
+const host            = "http://127.0.0.1"
+const cynosurePort    = "5678"
+const rasaPort        = "5005"
+const disconnectColor = "#ff0000"
+const connectColor    = "#30db5d"
+const fps             = 1
+const timeInterval    = 1000 / fps
 
-var endpoint = host + ":" + port
+const cynosureEndpoint = host + ":" + cynosurePort
+const rasaEndpoint     = host + ":" + rasaPort
 
-var video = document.getElementById("videoElement");
+var video         = document.getElementById("videoElement");
 var captureButton = document.getElementById('capture');
-var pingButton = document.getElementById('pingBtn');
-var chatButton = document.getElementById('chatSendBtn');
-var isCapturing = false
+var pingButton    = document.getElementById('pingBtn');
+var chatInput     = document.getElementById('chatInput');
+var chatButton    = document.getElementById('chatSendBtn');
+
+var cynosureStatusDiv = document.getElementById('cynosureStatus');
+var rasaStatusDiv     = document.getElementById('rasaStatus');
+
+var isCapturing       = false
 var continousSend
 
-var socket = io(endpoint,{
-    transports: ['websocket']
-});
-
-socket.on("connect", () => {
-  console.log("SocketIO Connected!")
-  console.log("ID :", socket.id);
-  captureButton.disabled = false;
-  pingButton.disabled = false;
-  chatButton.disabled = false;
-});
-
-socket.on("disconnect", () => {
-  console.log("SocketIO DisConnected!")
-  captureButton.disabled = true;
-  pingButton.disabled = true;
-  chatButton.disabled = true;
-});
+var cynosureSocket = io(cynosureEndpoint);
+var rasaSocket = io(rasaEndpoint);
 
 function pingPong() {
-  chatMsg = document.getElementById("chatInput").value
   pingMsg = "PING"
-
-  socket.emit('pingPong', pingMsg, (resp) => {
+  cynosureSocket.emit('pingPong', pingMsg, (resp) => {
     var item = document.getElementById("serverRespItem")
-    item.innerHTML = "Bot says = " + resp
+    item.innerHTML = "Response from Server: " + resp
   });
 }
 
@@ -51,10 +42,10 @@ function sendChat() {
     "message": chatMsg
   }
 
-  socket.emit('user_uttered', chatObj, (resp) => {
+  rasaSocket.emit('user_uttered', chatObj)
+  rasaSocket.once("bot_uttered", (resp) => {
     var item = document.getElementById("serverRespItem")
-    item.innerHTML = "Bot says = " + resp.text
-    console.log("Bot says = ", resp.text)
+    item.innerHTML = "Bot says " + resp.text
   });
 }
 
@@ -68,7 +59,7 @@ function getStillImage() {
 
 function sendDataToServer(data) {
   console.log("Sending image to server")
-  socket.emit('labelImage', data, (resp) => {
+  cynosureSocket.emit('labelImage', data, (resp) => {
     var item = document.getElementById("serverRespItem")
     item.innerHTML = "Image label = " + resp
     console.log("Server Response = ", resp)
@@ -96,3 +87,37 @@ if (navigator.mediaDevices.getUserMedia) {
       console.log("Something went wrong! ", err);
     });
 }
+
+cynosureSocket.on("connect", () => {
+  console.log("cynosureSocket ID :", cynosureSocket.id);
+  captureButton.disabled = false;
+  pingButton.disabled = false;
+  cynosureStatusDiv.style.borderColor = connectColor;
+  cynosureStatusDiv.style.color = connectColor;
+  cynosureStatusDiv.style.boxShadow = "0px 0px 4px 1px " + connectColor;
+});
+
+cynosureSocket.on("disconnect", () => {
+  captureButton.disabled = true;
+  pingButton.disabled = true;
+  cynosureStatusDiv.style.borderColor = disconnectColor;
+  cynosureStatusDiv.style.color = disconnectColor;
+  cynosureStatusDiv.style.boxShadow = "0px 0px 4px 1px " + disconnectColor;
+});
+
+rasaSocket.on("connect", () => {
+  console.log("rasaSocket ID :", rasaSocket.id);
+  chatInput.disabled = false;
+  chatButton.disabled = false;
+  rasaStatusDiv.style.borderColor = connectColor;
+  rasaStatusDiv.style.color = connectColor;
+  rasaStatusDiv.style.boxShadow = "0px 0px 4px 1px " + connectColor;
+});
+
+rasaSocket.on("disconnect", () => {
+  chatInput.disabled = true;
+  chatButton.disabled = true;
+  rasaStatusDiv.style.borderColor = disconnectColor;
+  rasaStatusDiv.style.color = disconnectColor;
+  rasaStatusDiv.style.boxShadow = "0px 0px 4px 1px " + disconnectColor;
+});

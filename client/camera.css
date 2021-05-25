@@ -7,4 +7,17 @@
 	width: 500px;
 	height: 375px;
 	background-color: #666;
+  margin: 10px;
+}
+
+.connectionStatus{
+  float: right;
+  width: 100px;
+  margin: 8px;
+  padding: 5px;
+  text-align: center;
+  border: 1px solid red;
+  color: red;
+  box-shadow: 0px 0px 4px 1px red;
+  font: 20px Arial, sans-serif;
 }
