@@ -1,51 +1,37 @@
 #!/usr/bin/env python
-import time
-import asyncio
-import websockets
-import os
 import sys
 import base64
 import numpy as np
 import cv2
 import socketio
+from aiohttp import web
 
 sys.path.append(".")
 from mask_detector import mask_detector as MD
 
-sio = socketio.AsyncServer(cors_allowed_origins = "*", async_handlers=True)
-# app = socketio.ASGIApp(sio)
+serverHost = "127.0.0.1"
+serverPort = 5678
 
-wsHost = "35.153.98.12"
-wsPort = 5678
+sio = socketio.AsyncServer(cors_allowed_origins = "*", async_handlers=True)
 
 @sio.event
-async def pingPong(websocket, path):
-  keyWord   = "PING"
+async def pingPong(sid, msg):
   returnMsg = "PONG"
-  errMsg    = "INVALID keyWord"
+  print("Received ", msg)
+  return returnMsg
 
-  sio.emit('pingPong', {'text': returnMsg})
-  # async for message in websocket:
-  # 	if message == keyWord:
-  # 		await websocket.send(returnMsg)
-  # 		print("Sent ", returnMsg)
-  # 	else:
-  # 		await websocket.send(errMsg)
-  # 		print(errMsg)
+@sio.event
+async def labelImage(sid, message):
 
+  print("sid = ", sid)
 
-async def echoReceived(websocket, path):
-  async for message in websocket:
-    print("Received data!")
-    startLoc = message.find("64,")+3
-    imageData = message[startLoc:]
+  startLoc = message.find("64,")+3
+  imageData = message[startLoc:]
 
-    if message != "PING":
-      img = processImg(imageData)
-      label = MD.mask_dist(img)
-      await websocket.send(str(label))
-    else:
-      await websocket.send("PONG")
+  img = processImg(imageData)
+  label = MD.mask_dist(img)
+
+  return label
 
 def processImg(imageData):
   jpg_original = base64.b64decode(imageData)
@@ -56,11 +42,9 @@ def init_models():
   MD.init_face_detector()
   print("Initialised models")
   
-# init_models()
+init_models()
 
-# start_server = websockets.serve(echoReceived, port=wsPort)
-# print("Started Server and waiting for clients")
-asyncio.get_event_loop().run_until_complete(sio)
-
-# print("Started Server and waiting for clients")
-asyncio.get_event_loop().run_forever()
+app = web.Application()
+sio.attach(app)
+print("Starting server")
+web.run_app(app, port=serverPort)

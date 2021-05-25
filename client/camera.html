@@ -11,11 +11,11 @@
   <div id="container">
     <video autoplay="true" id="videoElement"></video>
   </div>
-  <button id="capture" disabled>Start</button>
+  <button id="capture" disabled>Start Capture</button>
   <canvas id="canvas" width=320 height=240 hidden></canvas>
 
-  <button type="button" id="pingBtn" onclick="pingServer()" disabled>PING Server</button>
-  <input type="text" id="chatInput">
+  <button type="button" id="pingBtn" onclick="pingPong()" disabled>PING Server</button>
+  <input type="text" id="chatInput" disabled>
   <button type="button" id="chatSendBtn" onclick="sendChat()" disabled>Send</button>
   <br><br>
 

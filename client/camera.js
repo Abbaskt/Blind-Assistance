@@ -1,12 +1,11 @@
 // conda activate blindAsst && cd D:\src\Blind-Assistance\cynosure
 const host = "http://127.0.0.1"
-const port = "5005"
-const fps = 3
+const port = "5678"
+const fps = 1
 const timeInterval = 1000 / fps
 
 var endpoint = host + ":" + port
 
-// var ws = new WebSocket(endpoint)
 var video = document.getElementById("videoElement");
 var captureButton = document.getElementById('capture');
 var pingButton = document.getElementById('pingBtn');
@@ -18,12 +17,9 @@ var socket = io(endpoint,{
     transports: ['websocket']
 });
 
-console.log("Socket value = ", socket)
-console.log("Endpoint value = ", endpoint)
-
 socket.on("connect", () => {
   console.log("SocketIO Connected!")
-  console.log("UserID :", socket.id); // x8WIv7-mJelg7on_ALbx
+  console.log("ID :", socket.id);
   captureButton.disabled = false;
   pingButton.disabled = false;
   chatButton.disabled = false;
@@ -31,44 +27,23 @@ socket.on("connect", () => {
 
 socket.on("disconnect", () => {
   console.log("SocketIO DisConnected!")
-  captureButton.disabled = false;
+  captureButton.disabled = true;
   pingButton.disabled = true;
   chatButton.disabled = true;
 });
 
-// ws.addEventListener('open', function (event) {
-//   captureButton.disabled = false;
-//   pingButton.disabled = false;
-//   chatButton.disabled = false;
-// });
+function pingPong() {
+  chatMsg = document.getElementById("chatInput").value
+  pingMsg = "PING"
 
-// ws.addEventListener('close', function (event) {
-//   captureButton.disabled = true;
-//   pingButton.disabled = true;
-//   chatButton.disabled = false;
-//   clearTimeout(continousSend);
-// });
-
-function pingServer() {
-  ws.send("PING");
-  console.log("Sent PING to Server")
-  ws.onmessage = function (event) {
-    // var respDiv = document.getElementById('serverResp'),
-    //     message = document.createElement('li'),
-    //     content = document.createTextNode(event.data);
-
-    // message.appendChild(content);
-    // respDiv.appendChild(message);
+  socket.emit('pingPong', pingMsg, (resp) => {
     var item = document.getElementById("serverRespItem")
-    item.innerHTML = event.data
-    console.log("Received " + event.data + " from Server")
-  };
+    item.innerHTML = "Bot says = " + resp
+  });
 }
 
 function sendChat() {
   chatMsg = document.getElementById("chatInput").value
-  // ws.send(chatMsg);
-
   chatObj =
   {
     "session_id": "session123",
@@ -76,16 +51,11 @@ function sendChat() {
     "message": chatMsg
   }
 
-  socket.emit('user_uttered', chatObj);
-  console.log("Sent ", chatObj, " to Server")
-
-  socket.on("bot_uttered", (botResp) => {
+  socket.emit('user_uttered', chatObj, (resp) => {
     var item = document.getElementById("serverRespItem")
-    item.innerHTML = "Bot says = " + botResp.text
-    console.log("Bot says = ", botResp.text)
-
+    item.innerHTML = "Bot says = " + resp.text
+    console.log("Bot says = ", resp.text)
   });
-
 }
 
 function getStillImage() {
@@ -97,17 +67,21 @@ function getStillImage() {
 }
 
 function sendDataToServer(data) {
-  ws.send(data);
-  console.log("Sent " + data + " to Server")
+  console.log("Sending image to server")
+  socket.emit('labelImage', data, (resp) => {
+    var item = document.getElementById("serverRespItem")
+    item.innerHTML = "Image label = " + resp
+    console.log("Server Response = ", resp)
+  });
 }
 
 captureButton.addEventListener('click', () => {
   if (isCapturing) {
     clearTimeout(continousSend);
-    captureButton.innerText = "Start"
+    captureButton.innerText = "Start Capture"
   }
   if (!isCapturing) {
-    captureButton.innerText = "Stop"
+    captureButton.innerText = "Stop Capture"
     continousSend = setInterval(() => { sendDataToServer(getStillImage()) }, timeInterval);
   }
   isCapturing = !isCapturing
