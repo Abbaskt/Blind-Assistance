@@ -4,6 +4,7 @@
 <head>
   <title>WebSocket demo</title>
   <link rel="stylesheet" href="camera.css">
+  <meta charset="UTF-8">
 </head>
 
 <body>
@@ -13,8 +14,15 @@
   <button id="capture" disabled>Start</button>
   <canvas id="canvas" width=320 height=240 hidden></canvas>
 
-  <button type="button" id="pingBtn" onclick="pingServer()" disabled>Send PING</button>
-  <ul id="serverResp"><li id="serverRespItem"></li></ul>
+  <button type="button" id="pingBtn" onclick="pingServer()" disabled>PING Server</button>
+  <input type="text" id="chatInput">
+  <button type="button" id="chatSendBtn" onclick="sendChat()" disabled>Send</button>
+  <br><br>
+
+  <ul id="serverResp">
+    <li id="serverRespItem"></li>
+  </ul>
+  <script src="./node_modules/socket.io-client/dist/socket.io.js"></script>
   <script src="camera.js"></script>
 </body>
 
