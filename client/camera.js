@@ -45,7 +45,7 @@ function sendChat() {
   rasaSocket.emit('user_uttered', chatObj)
   rasaSocket.once("bot_uttered", (resp) => {
     var item = document.getElementById("serverRespItem")
-    item.innerHTML = "Bot says " + resp.text
+    item.innerHTML = "Bot says : " + resp.text
   });
 }
 
