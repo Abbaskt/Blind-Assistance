@@ -6,6 +6,7 @@ const disconnectColor = "#ff0000"
 const connectColor    = "#30db5d"
 const fps             = 1
 const timeInterval    = 1000 / fps
+const respLength      = 5
 
 const cynosureEndpoint = host + ":" + cynosurePort
 const rasaEndpoint     = host + ":" + rasaPort
@@ -28,8 +29,7 @@ var rasaSocket = io(rasaEndpoint);
 function pingPong() {
   pingMsg = "PING"
   cynosureSocket.emit('pingPong', pingMsg, (resp) => {
-    var item = document.getElementById("serverRespItem")
-    item.innerHTML = "Response from Server: " + resp
+    displayResponse(resp)
   });
 }
 
@@ -44,8 +44,7 @@ function sendChat() {
 
   rasaSocket.emit('user_uttered', chatObj)
   rasaSocket.once("bot_uttered", (resp) => {
-    var item = document.getElementById("serverRespItem")
-    item.innerHTML = "Bot says : " + resp.text
+    displayResponse(resp.text)
   });
 }
 
@@ -60,9 +59,7 @@ function getStillImage() {
 function sendDataToServer(data) {
   console.log("Sending image to server")
   cynosureSocket.emit('labelImage', data, (resp) => {
-    var item = document.getElementById("serverRespItem")
-    item.innerHTML = "Image label = " + resp
-    console.log("Server Response = ", resp)
+    displayResponse(resp)
   });
 }
 
@@ -86,6 +83,20 @@ if (navigator.mediaDevices.getUserMedia) {
     .catch(function (err) {
       console.log("Something went wrong! ", err);
     });
+}
+
+function displayResponse(text){
+  var responseUL  = document.getElementById("serverResp")
+  var item         = document.createElement("li");
+  var respText     = "Server response: " + text
+
+  item.appendChild(document.createTextNode(respText));
+  responseUL.appendChild(item)
+  
+  if(responseUL.children.length > respLength){
+    responseUL.removeChild(responseUL.children[0]);
+  }
+  console.log(responseUL)
 }
 
 cynosureSocket.on("connect", () => {

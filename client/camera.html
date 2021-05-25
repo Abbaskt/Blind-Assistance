@@ -24,12 +24,11 @@
   <canvas id="canvas" width=320 height=240 hidden></canvas>
 
   <button type="button" id="pingBtn" onclick="pingPong()" disabled>PING Server</button>
-  <input type="text" id="chatInput">
-  <button type="button" id="chatSendBtn" onclick="sendChat()">Send</button>
+  <input type="text" id="chatInput" disabled>
+  <button type="button" id="chatSendBtn" onclick="sendChat()" disabled>Send</button>
   <br><br>
 
   <ul id="serverResp">
-    <li id="serverRespItem"></li>
   </ul>
   <script src="./node_modules/socket.io-client/dist/socket.io.js"></script>
   <script src="camera.js"></script>
