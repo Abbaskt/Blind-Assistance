@@ -12,6 +12,10 @@ This project is a web application that uses a speech based conversational chatbo
 
 Works only on chrome for now. 
 
+## Dependencies
+
+Use BlinddAssistance.yml file for installing pip and conda packages. 
+
 
 
 
