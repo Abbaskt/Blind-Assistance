@@ -8,9 +8,7 @@ import numpy as np
 import cv2
 
 KNOWN_DISTANCE = 24.0
-# initialize the known object width, which in this case, the piece of
-# paper is 12 inches wide
-KNOWN_WIDTH = 6.0
+KNOWN_WIDTH = 12.0
 focalLength = -999
 color =(255,0,0)
 
@@ -78,6 +76,7 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
     return (-999,-999)
 
 def distance_to_camera(knownWidth, focalLength, perWidth):
+  # Calculate using triangle similarity
   # compute and return the distance from the maker to the camera
   return (knownWidth * focalLength) / perWidth
 
@@ -109,14 +108,14 @@ def mask_dist(img):
       color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
 
       # include the probability in the label
-      label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
-      retval = label +", " + str(inches/12) + "ft"
+      label_with_acc = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+      # retval = label +", " + str(inches/12) + "ft"
       # cv2.putText(frame, label, (startX, startY - 10),
       # 	cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
       # cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
       # cv2.imshow('window',img)
       # cv2.waitKey(1)
-      return retval
+      return label, str(inches/12)
 
 def init_mask_detector():
   global faceNet, maskNet

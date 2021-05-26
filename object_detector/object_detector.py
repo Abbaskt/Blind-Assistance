@@ -128,15 +128,26 @@ def detect_object(frame_val):
     else:
         image, class_name, object_coord = utils.draw_bbox(frame, pred_bbox, info, allowed_classes=allowed_classes)
     
-    retval += str(class_name)
-    mask_val = MD.mask_dist(frame_val)
-    if mask_val=="no face":
+    # retval += str(class_name)
+    try:
+        mask_label, dist = MD.mask_dist(frame_val)
+    except:
+        mask_label = "no face"
+    if mask_label=="no face":
         pass
     else:    
         if class_name == "person":
             face_val = FD.detect_face(frame)
-            print(str(mask_val)+str(face_val))
-            retval += str(str(mask_val) + str(face_val))
+            if face_val!="None":
+                retval = str(face_val) + " found with " +str(mask_label) + " "+dist+" ft away"
+            else:
+                retval = "Unknown person" + "found with " +str(mask_label) + " "+dist+" ft away"
+        else:
+            if retval=="":
+                retval = "No object found in frame"
+            else:
+                retval = str(class_name) + " found in frame"
+            # retval = str(str(mask_val) + str(face_val))
 
     fps = 1.0 / (time.time() - start_time)
     # print("FPS: %.2f" % fps)

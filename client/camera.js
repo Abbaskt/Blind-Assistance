@@ -6,12 +6,25 @@ const disconnectColor = "#ff0000"
 const connectColor    = "#30db5d"
 const fps             = 1
 const timeInterval    = 1000 / fps
-const respLength      = 5
 
 const cynosureEndpoint = host + ":" + cynosurePort
 const rasaEndpoint     = host + ":" + rasaPort
 
-var video         = document.getElementById("videoElement");
+// TTS
+let speech = new SpeechSynthesisUtterance();
+speech.lang = "en";
+let voices = window.speechSynthesis.getVoices();
+speech.voice = voices[1];
+
+// STT
+var SpeechRecognition = window.webkitSpeechRecognition;
+var recognition = new SpeechRecognition();
+var Textbox = $('#chatInput');
+var Content = '';
+recognition.continuous = true;
+recognition.start();
+
+var video = document.getElementById("videoElement");
 var captureButton = document.getElementById('capture');
 var pingButton    = document.getElementById('pingBtn');
 var chatInput     = document.getElementById('chatInput');
@@ -26,10 +39,37 @@ var continousSend
 var cynosureSocket = io(cynosureEndpoint);
 var rasaSocket = io(rasaEndpoint);
 
+recognition.onresult = function(event) {
+  var current = event.resultIndex;
+  var transcript = event.results[current][0].transcript;
+  Content = transcript;
+  Textbox.val(Content);
+  sendChat();
+};
+
+recognition.onstart = function() { 
+  instructions.text('Voice recognition is ON.');
+}
+
+recognition.onspeechend = function() {
+  instructions.text('No activity.');
+}
+
+recognition.onerror = function(event) {
+  if(event.error == 'no-speech') {
+    instructions.text('Try again.');  
+  }
+}
+
+Textbox.on('input', function() {
+  Content = $(this).val();
+})
+
 function pingPong() {
   pingMsg = "PING"
   cynosureSocket.emit('pingPong', pingMsg, (resp) => {
-    displayResponse(resp)
+    var item = document.getElementById("serverRespItem")
+    item.innerHTML = "Response from Server: " + resp
   });
 }
 
@@ -43,10 +83,18 @@ function sendChat() {
   }
 
   rasaSocket.emit('user_uttered', chatObj)
-  rasaSocket.once("bot_uttered", (resp) => {
-    displayResponse(resp.text)
+
+  rasaSocket.once("bot_uttered", (resp) =>  {
+    var item = document.getElementById("serverRespItem")
+    item.innerHTML = "Bot says = " + resp.text
+    speech.text = resp.text;
+    window.speechSynthesis.speak(speech);
+    console.log("Bot says = ", resp.text)
+    Textbox.val("")
+    // console.log("Bot says = ", resp)
   });
 }
+
 
 function getStillImage() {
   const canvas = document.getElementById('canvas');
@@ -59,7 +107,9 @@ function getStillImage() {
 function sendDataToServer(data) {
   console.log("Sending image to server")
   cynosureSocket.emit('labelImage', data, (resp) => {
-    displayResponse(resp)
+    var item = document.getElementById("serverRespItem")
+    item.innerHTML = "Image label = " + resp
+    console.log("Server Response = ", resp)
   });
 }
 
@@ -83,20 +133,6 @@ if (navigator.mediaDevices.getUserMedia) {
     .catch(function (err) {
       console.log("Something went wrong! ", err);
     });
-}
-
-function displayResponse(text){
-  var responseUL  = document.getElementById("serverResp")
-  var item         = document.createElement("li");
-  var respText     = "Server response: " + text
-
-  item.appendChild(document.createTextNode(respText));
-  responseUL.appendChild(item)
-  
-  if(responseUL.children.length > respLength){
-    responseUL.removeChild(responseUL.children[0]);
-  }
-  console.log(responseUL)
 }
 
 cynosureSocket.on("connect", () => {
