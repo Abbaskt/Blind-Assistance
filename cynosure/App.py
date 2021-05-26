@@ -7,7 +7,7 @@ import socketio
 from aiohttp import web
 
 sys.path.append(".")
-from mask_detector import mask_detector as MD
+from object_detector import object_detector as OD
 
 serverHost = "127.0.0.1"
 serverPort = 5678
@@ -29,7 +29,7 @@ async def labelImage(sid, message):
   imageData = message[startLoc:]
 
   img = processImg(imageData)
-  label = MD.mask_dist(img)
+  label = OD.detect_object(img)
 
   return label
 
@@ -39,7 +39,7 @@ def processImg(imageData):
   return cv2.imdecode(jpg_as_np, flags=1)
 
 def init_models():
-  MD.init_face_detector()
+  OD.init_object_detector()
   print("Initialised models")
   
 init_models()

@@ -84,7 +84,6 @@ def distance_to_camera(knownWidth, focalLength, perWidth):
 def mask_dist(img):
   global focalLength, KNOWN_DISTANCE, KNOWN_WIDTH, color, faceNet, maskNet
   
-  print("faceNet in mask_dist is", faceNet)
   frame = imutils.resize(img, width=400)
   (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
   if (locs, preds) == (-999,-999):
@@ -106,7 +105,7 @@ def mask_dist(img):
       # determine the class label and color we'll use to draw
       # the bounding box and text
       label = "Mask" if mask > withoutMask else "No Mask"
-      print(label)
+      # print(label)
       color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
 
       # include the probability in the label
@@ -119,19 +118,23 @@ def mask_dist(img):
       # cv2.waitKey(1)
       return retval
 
-def init_face_detector():
+def init_mask_detector():
   global faceNet, maskNet
 
-  print("faceNet in init_face_detector is", faceNet)
-
   # load our serialized face detector model from disk
-  print("[INFO] loading face detector model...")
+  # print("[INFO] loading face detector model...")
   prototxtPath = "mask_detector/deploy.prototxt"
   weightsPath = "mask_detector/res10_300x300_ssd_iter_140000.caffemodel"
   faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
+  # print("faceNet in init_face_detector is", faceNet)
+
   # load the face mask detector model from disk
-  print("[INFO] loading face mask detector model...")
+  # print("[INFO] loading face mask detector model...")
   maskNet = load_model("mask_detector/mask_detector.model")
 
-  print("faceNet in init_face_detector is", faceNet)
+  # print("faceNet in init_mask_detector is", faceNet)
+
+def test():
+  global faceNet, maskNet
+  print("faceNet in test is", faceNet)
