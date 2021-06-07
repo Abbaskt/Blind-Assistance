@@ -49,16 +49,16 @@ recognition.onresult = function(event) {
 };
 
 recognition.onstart = function() { 
-  instructions.text('Voice recognition is ON.');
+  // instructions.text('Voice recognition is ON.');
 }
 
 recognition.onspeechend = function() {
-  instructions.text('No activity.');
+  // instructions.text('No activity.');
 }
 
 recognition.onerror = function(event) {
   if(event.error == 'no-speech') {
-    instructions.text('Try again.');  
+    // instructions.text('Try again.');  
   }
 }
 
