@@ -3,6 +3,7 @@ version: "2.0"
 intents:
   - greet
   - goodbye
+  - navigate
   - affirm
   - deny
   - mood_great
@@ -11,7 +12,7 @@ intents:
 
 responses:
   utter_greet:
-  - text: "Hey! How are you?"
+  - text: "Hey! I am Rasa. How can I help you?"
 
   utter_cheer_up:
   - text: "Here is something to cheer you up:"
@@ -28,6 +29,19 @@ responses:
 
   utter_iamabot:
   - text: "I am a bot, powered by Rasa."
+
+  utter_start_navigation:
+  - text: "Starting guided navigation."
+  - text: "Starting guided navigation now"
+
+  utter_command_start_navigation:
+  - custom:
+      data:
+        - text: "Starting guided navigation."
+        - perform: "startNavigation()"
+
+actions:
+  - action_start_navigate
 
 session_config:
   session_expiration_time: 60

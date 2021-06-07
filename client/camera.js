@@ -40,7 +40,7 @@ var continousSend
 var cynosureSocket = io(cynosureEndpoint);
 var rasaSocket = io(rasaEndpoint);
 
-recognition.onresult = function(event) {
+recognition.onresult = function (event) {
   var current = event.resultIndex;
   var transcript = event.results[current][0].transcript;
   Content = transcript;
@@ -48,21 +48,21 @@ recognition.onresult = function(event) {
   sendChat();
 };
 
-recognition.onstart = function() { 
+recognition.onstart = function () {
   // instructions.text('Voice recognition is ON.');
 }
 
-recognition.onspeechend = function() {
+recognition.onspeechend = function () {
   // instructions.text('No activity.');
 }
 
-recognition.onerror = function(event) {
-  if(event.error == 'no-speech') {
+recognition.onerror = function (event) {
+  if (event.error == 'no-speech') {
     // instructions.text('Try again.');  
   }
 }
 
-Textbox.on('input', function() {
+Textbox.on('input', function () {
   Content = $(this).val();
 })
 
@@ -83,17 +83,34 @@ function sendChat() {
   }
 
   rasaSocket.emit('user_uttered', chatObj)
-
-  rasaSocket.once("bot_uttered", (resp) =>  {
-    displayResponse(resp.text)
-    speech.text = resp.text;
-    window.speechSynthesis.speak(speech);
-    console.log("Bot says = ", resp.text)
-    Textbox.val("")
-    // console.log("Bot says = ", resp)
-  });
 }
 
+rasaSocket.on("bot_uttered", (resp) => {
+  console.log("Received Response from bot ", resp)
+  obj = undefined
+  try{
+    obj = Object.assign({}, ...resp)
+  }
+  catch(err){
+    obj = resp
+  }
+  
+  displayResponse(obj.text)
+  speech.text = obj.text;
+  window.speechSynthesis.speak(speech);
+  Textbox.val("")
+  try{
+    eval(obj.perform)
+  }
+  catch(err){
+    console.log("Unknow function to perform", obj.perform)
+  }
+});
+
+function startNavigation(){
+  console.log("Starting Navigation")
+  continousSend = setInterval(() => { sendDataToServer(getStillImage()) }, timeInterval);
+}
 
 function getStillImage() {
   const canvas = document.getElementById('canvas');
@@ -133,18 +150,17 @@ if (navigator.mediaDevices.getUserMedia) {
 }
 
 
-function displayResponse(text){
-  var responseUL  = document.getElementById("serverResp")
-  var item         = document.createElement("li");
-  var respText     = "Server response: " + text
+function displayResponse(text) {
+  var responseUL = document.getElementById("serverResp")
+  var item       = document.createElement("li");
+  var respText   = "Server response: " + text
 
   item.appendChild(document.createTextNode(respText));
   responseUL.appendChild(item)
 
-  if(responseUL.children.length > respLength){
+  if (responseUL.children.length > respLength) {
     responseUL.removeChild(responseUL.children[0]);
   }
-  console.log(responseUL)
 }
 
 cynosureSocket.on("connect", () => {
