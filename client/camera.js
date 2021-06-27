@@ -40,6 +40,13 @@ var continousSend
 var cynosureSocket = io(cynosureEndpoint);
 var rasaSocket = io(rasaEndpoint);
 
+var rasaTimesCounter = 0;
+var rasaStartTimes   = [];
+var rasaLatencies    = [];
+var cynoTimesCounter = 0;
+var cynoStartTimes   = [];
+var cynoLatencies    = [];
+
 recognition.onresult = function (event) {
   var current = event.resultIndex;
   var transcript = event.results[current][0].transcript;
@@ -68,8 +75,10 @@ Textbox.on('input', function () {
 
 function pingPong() {
   pingMsg = "PING"
+  cynoStartTimes.push(Date.now())
   cynosureSocket.emit('pingPong', pingMsg, (resp) => {
-    displayResponse(resp)
+    cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
+    displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1])
   });
 }
 
@@ -81,12 +90,13 @@ function sendChat() {
     "sender": "testUser",
     "message": chatMsg
   }
-
+  rasaStartTimes.push(Date.now())
   rasaSocket.emit('user_uttered', chatObj)
 }
 
 rasaSocket.on("bot_uttered", (resp) => {
   console.log("Received Response from bot ", resp)
+  rasaLatencies.push(Date.now() - rasaStartTimes[rasaTimesCounter++]);
   obj = undefined
   try{
     obj = Object.assign({}, ...resp)
@@ -95,7 +105,7 @@ rasaSocket.on("bot_uttered", (resp) => {
     obj = resp
   }
   
-  displayResponse(obj.text)
+  displayResponse("Rasa", obj.text, rasaLatencies[rasaTimesCounter-1])
   speech.text = obj.text;
   window.speechSynthesis.speak(speech);
   Textbox.val("")
@@ -122,8 +132,10 @@ function getStillImage() {
 
 function sendDataToServer(data) {
   console.log("Sending image to server")
+  cynoStartTimes.push(Date.now())
   cynosureSocket.emit('labelImage', data, (resp) => {
-    displayResponse(resp)
+    cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
+    displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1])
   });
 }
 
@@ -150,10 +162,10 @@ if (navigator.mediaDevices.getUserMedia) {
 }
 
 
-function displayResponse(text) {
+function displayResponse(serverName, text, latency) {
   var responseUL = document.getElementById("serverResp")
   var item       = document.createElement("li");
-  var respText   = "Server response: " + text
+  var respText   = serverName +" response: " + text + " | Latency = " + latency + "ms"
 
   item.appendChild(document.createTextNode(respText));
   responseUL.appendChild(item)
