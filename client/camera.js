@@ -42,7 +42,14 @@ var continousSend
 var cynosureSocket = io(cynosureEndpoint);
 var rasaSocket = io(rasaEndpoint);
 
-recognition.onresult = function(event) {
+var rasaTimesCounter = 0;
+var rasaStartTimes   = [];
+var rasaLatencies    = [];
+var cynoTimesCounter = 0;
+var cynoStartTimes   = [];
+var cynoLatencies    = [];
+
+recognition.onresult = function (event) {
   var current = event.resultIndex;
   var transcript = event.results[current][0].transcript;
   Content = transcript;
@@ -54,28 +61,30 @@ recognition.onresult = function(event) {
   sendChat();
 };
 
-recognition.onstart = function() { 
-  instructions.text('Voice recognition is ON.');
+recognition.onstart = function () {
+  // instructions.text('Voice recognition is ON.');
 }
 
-recognition.onspeechend = function() {
-  instructions.text('No activity.');
+recognition.onspeechend = function () {
+  // instructions.text('No activity.');
 }
 
-recognition.onerror = function(event) {
-  if(event.error == 'no-speech') {
-    instructions.text('Try again.');  
+recognition.onerror = function (event) {
+  if (event.error == 'no-speech') {
+    // instructions.text('Try again.');  
   }
 }
 
-Textbox.on('input', function() {
+Textbox.on('input', function () {
   Content = $(this).val();
 })
 
 function pingPong() {
   pingMsg = "PING"
+  cynoStartTimes.push(Date.now())
   cynosureSocket.emit('pingPong', pingMsg, (resp) => {
-    displayResponse(resp)
+    cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
+    displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1])
   });
 }
 
@@ -87,31 +96,37 @@ function sendChat() {
     "sender": "testUser",
     "message": chatMsg
   }
-
+  rasaStartTimes.push(Date.now())
   rasaSocket.emit('user_uttered', chatObj)
-
-  rasaSocket.once("bot_uttered", (resp) =>  {
-    displayResponse(resp.text)
-    speech.text = resp.text;
-    window.speechSynthesis.speak(speech);
-    console.log("Bot says = ", resp.text)
-    // console.log("Bot says = ", resp)
-  });
 }
 
-function displayResponse(serverName, text, latency) {
-  var responseUL = document.getElementById("serverResp")
-  var item       = document.createElement("li");
-  var respText   = serverName +" response: " + text + " | Latency = " + latency + "ms"
-
-  item.appendChild(document.createTextNode(respText));
-  responseUL.appendChild(item)
-
-  if (responseUL.children.length > respLength) {
-    responseUL.removeChild(responseUL.children[0]);
+rasaSocket.on("bot_uttered", (resp) => {
+  console.log("Received Response from bot ", resp)
+  rasaLatencies.push(Date.now() - rasaStartTimes[rasaTimesCounter++]);
+  obj = undefined
+  try{
+    obj = Object.assign({}, ...resp)
   }
-}
+  catch(err){
+    obj = resp
+  }
+  
+  displayResponse("Rasa", obj.text, rasaLatencies[rasaTimesCounter-1])
+  speech.text = obj.text;
+  window.speechSynthesis.speak(speech);
+  Textbox.val("")
+  try{
+    eval(obj.perform)
+  }
+  catch(err){
+    console.log("Unknow function to perform", obj.perform)
+  }
+});
 
+function startNavigation(){
+  console.log("Starting Navigation")
+  continousSend = setInterval(() => { sendDataToServer(getStillImage()) }, timeInterval);
+}
 
 function getStillImage() {
   const canvas = document.getElementById('canvas');
@@ -123,8 +138,10 @@ function getStillImage() {
 
 function sendDataToServer(data) {
   console.log("Sending image to server")
+  cynoStartTimes.push(Date.now())
   cynosureSocket.emit('labelImage', data, (resp) => {
-    displayResponse(resp)
+    cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
+    displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1])
   });
 }
 
@@ -150,6 +167,20 @@ if (navigator.mediaDevices.getUserMedia) {
     .catch(function (err) {
       console.log("Something went wrong! ", err);
     });
+}
+
+
+function displayResponse(serverName, text, latency) {
+  var responseUL = document.getElementById("serverResp")
+  var item       = document.createElement("li");
+  var respText   = serverName +" response: " + text + " | Latency = " + latency + "ms"
+
+  item.appendChild(document.createTextNode(respText));
+  responseUL.appendChild(item)
+
+  if (responseUL.children.length > respLength) {
+    responseUL.removeChild(responseUL.children[0]);
+  }
 }
 
 cynosureSocket.on("connect", () => {
