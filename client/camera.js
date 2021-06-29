@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // conda activate blindAsst && cd D:\src\Blind-Assistance\cynosure
 const host            = "http://127.0.0.1"
 const cynosurePort    = "5678"
@@ -6,14 +7,13 @@ const disconnectColor = "#ff0000"
 const connectColor    = "#30db5d"
 const fps             = 1
 const timeInterval    = 1000 / fps
-const respLength      = 5
 
 const cynosureEndpoint = host + ":" + cynosurePort
 const rasaEndpoint     = host + ":" + rasaPort
 
 // TTS
 let speech = new SpeechSynthesisUtterance();
-speech.lang = "en";
+speech.lang = "kn-IN";
 let voices = window.speechSynthesis.getVoices();
 speech.voice = voices[1];
 
@@ -22,7 +22,9 @@ var SpeechRecognition = window.webkitSpeechRecognition;
 var recognition = new SpeechRecognition();
 var Textbox = $('#chatInput');
 var Content = '';
+translate.key = "AIzaSyB5pb9tEEu-p3mGTNGpKqHlwAT5a1On68I"
 recognition.continuous = true;
+recognition.lang = "kn-IN"
 recognition.start();
 
 var video = document.getElementById("videoElement");
@@ -45,20 +47,24 @@ recognition.onresult = function(event) {
   var transcript = event.results[current][0].transcript;
   Content = transcript;
   Textbox.val(Content);
+  translate(Content,{from:"kn",to:"en"}).then(text =>{
+    Textbox.val(text);
+  })
+  // Textbox.val(Content);
   sendChat();
 };
 
 recognition.onstart = function() { 
-  // instructions.text('Voice recognition is ON.');
+  instructions.text('Voice recognition is ON.');
 }
 
 recognition.onspeechend = function() {
-  // instructions.text('No activity.');
+  instructions.text('No activity.');
 }
 
 recognition.onerror = function(event) {
   if(event.error == 'no-speech') {
-    // instructions.text('Try again.');  
+    instructions.text('Try again.');  
   }
 }
 
@@ -89,9 +95,21 @@ function sendChat() {
     speech.text = resp.text;
     window.speechSynthesis.speak(speech);
     console.log("Bot says = ", resp.text)
-    Textbox.val("")
     // console.log("Bot says = ", resp)
   });
+}
+
+function displayResponse(serverName, text, latency) {
+  var responseUL = document.getElementById("serverResp")
+  var item       = document.createElement("li");
+  var respText   = serverName +" response: " + text + " | Latency = " + latency + "ms"
+
+  item.appendChild(document.createTextNode(respText));
+  responseUL.appendChild(item)
+
+  if (responseUL.children.length > respLength) {
+    responseUL.removeChild(responseUL.children[0]);
+  }
 }
 
 
@@ -114,8 +132,10 @@ captureButton.addEventListener('click', () => {
   if (isCapturing) {
     clearTimeout(continousSend);
     captureButton.innerText = "Start Capture"
+    recognition.stop();
   }
   if (!isCapturing) {
+    recognition.start()
     captureButton.innerText = "Stop Capture"
     continousSend = setInterval(() => { sendDataToServer(getStillImage()) }, timeInterval);
   }
@@ -130,21 +150,6 @@ if (navigator.mediaDevices.getUserMedia) {
     .catch(function (err) {
       console.log("Something went wrong! ", err);
     });
-}
-
-
-function displayResponse(text){
-  var responseUL  = document.getElementById("serverResp")
-  var item         = document.createElement("li");
-  var respText     = "Server response: " + text
-
-  item.appendChild(document.createTextNode(respText));
-  responseUL.appendChild(item)
-
-  if(responseUL.children.length > respLength){
-    responseUL.removeChild(responseUL.children[0]);
-  }
-  console.log(responseUL)
 }
 
 cynosureSocket.on("connect", () => {
