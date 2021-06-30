@@ -1,5 +1,6 @@
-#!/usr/bin/env node
 // conda activate blindAsst && cd D:\src\Blind-Assistance\cynosure
+require("dotenv").config()
+
 const host            = "http://127.0.0.1"
 const cynosurePort    = "5678"
 const rasaPort        = "5005"
@@ -13,7 +14,7 @@ const rasaEndpoint     = host + ":" + rasaPort
 
 // TTS
 let speech = new SpeechSynthesisUtterance();
-speech.lang = "kn-IN";
+speech.lang = "kn";
 let voices = window.speechSynthesis.getVoices();
 speech.voice = voices[1];
 
@@ -22,7 +23,7 @@ var SpeechRecognition = window.webkitSpeechRecognition;
 var recognition = new SpeechRecognition();
 var Textbox = $('#chatInput');
 var Content = '';
-translate.key = "AIzaSyB5pb9tEEu-p3mGTNGpKqHlwAT5a1On68I"
+translate.key = process.env.API_KEY
 recognition.continuous = true;
 recognition.lang = "kn-IN"
 recognition.start();

@@ -1,6 +1,16 @@
+# model files
 **/weights/
+**/datasets
+
+# python executives
 **/__pycache__
+
+# node packages
 **/node_modules
 package-lock.json
-**/datasets
+
+# vs code fiels
 .vscode/settings.json
+
+#environment files
+**.env
