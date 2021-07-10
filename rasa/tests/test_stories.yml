@@ -89,3 +89,17 @@ stories:
       are you a bot?
     intent: bot_challenge
   - action: utter_iamabot
+
+- story: start navigation
+  steps:
+  - user: |
+      Start Navigation
+    intent: navigate
+  - action: utter_command_start_navigation
+
+- story: stop navigation
+  steps:
+  - user: |
+      Stop Navigation
+    intent: stop_navigation
+  - action: utter_command_stop_navigation

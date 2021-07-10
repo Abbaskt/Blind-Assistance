@@ -129,6 +129,11 @@ function startNavigation(){
   continousSend = setInterval(() => { sendDataToServer(getStillImage()) }, timeInterval);
 }
 
+function stopNavigation(){
+  console.log("Stopping Navigation")
+  clearTimeout(continousSend);
+}
+
 function getStillImage() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
@@ -186,7 +191,7 @@ function displayResponse(serverName, text, latency) {
 
 cynosureSocket.on("connect", () => {
   console.log("cynosureSocket ID :", cynosureSocket.id);
-  captureButton.disabled = false;
+  // captureButton.disabled = false;
   pingButton.disabled = false;
   cynosureStatusDiv.style.borderColor = connectColor;
   cynosureStatusDiv.style.color = connectColor;

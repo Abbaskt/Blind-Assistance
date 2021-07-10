@@ -9,8 +9,12 @@
 **/node_modules
 package-lock.json
 
-# vs code fiels
+# vs code fields
 .vscode/settings.json
+
+# Rasa generated Files
+rasa/models/
+rasa/results/**
 
 #environment files
 **.env
