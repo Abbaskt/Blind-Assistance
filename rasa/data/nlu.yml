@@ -30,9 +30,16 @@ nlu:
     - see you later
 - intent: navigate
   examples: |
+    - Start Navigation
     - Guide me
     - Navigate
     - navigate
+- intent: stop_navigation
+  examples: |
+    - Stop
+    - Stop guiding
+    - Stop Navigation
+    - Pause Navigation
 - intent: affirm
   examples: |
     - yes

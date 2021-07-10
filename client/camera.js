@@ -1,5 +1,5 @@
 // conda activate blindAsst && cd D:\src\Blind-Assistance\cynosure
-require("dotenv").config()
+// require("dotenv").config()
 
 const host            = "http://127.0.0.1"
 const cynosurePort    = "5678"
@@ -8,13 +8,14 @@ const disconnectColor = "#ff0000"
 const connectColor    = "#30db5d"
 const fps             = 1
 const timeInterval    = 1000 / fps
+const respLength      = 5
 
 const cynosureEndpoint = host + ":" + cynosurePort
 const rasaEndpoint     = host + ":" + rasaPort
 
 // TTS
 let speech = new SpeechSynthesisUtterance();
-speech.lang = "kn";
+speech.lang = "en";
 let voices = window.speechSynthesis.getVoices();
 speech.voice = voices[1];
 
@@ -23,9 +24,8 @@ var SpeechRecognition = window.webkitSpeechRecognition;
 var recognition = new SpeechRecognition();
 var Textbox = $('#chatInput');
 var Content = '';
-translate.key = process.env.API_KEY
 recognition.continuous = true;
-recognition.lang = "kn-IN"
+// recognition.lang = "kn-IN"
 recognition.start();
 
 var video = document.getElementById("videoElement");
@@ -55,9 +55,9 @@ recognition.onresult = function (event) {
   var transcript = event.results[current][0].transcript;
   Content = transcript;
   Textbox.val(Content);
-  translate(Content,{from:"kn",to:"en"}).then(text =>{
-    Textbox.val(text);
-  })
+  // translate(Content,{from:"kn",to:"en"}).then(text =>{
+  //   Textbox.val(text);
+  // })
   // Textbox.val(Content);
   sendChat();
 };
@@ -129,6 +129,11 @@ function startNavigation(){
   continousSend = setInterval(() => { sendDataToServer(getStillImage()) }, timeInterval);
 }
 
+function stopNavigation(){
+  console.log("Stopping Navigation")
+  clearTimeout(continousSend);
+}
+
 function getStillImage() {
   const canvas = document.getElementById('canvas');
   const context = canvas.getContext('2d');
@@ -186,7 +191,7 @@ function displayResponse(serverName, text, latency) {
 
 cynosureSocket.on("connect", () => {
   console.log("cynosureSocket ID :", cynosureSocket.id);
-  captureButton.disabled = false;
+  // captureButton.disabled = false;
   pingButton.disabled = false;
   cynosureStatusDiv.style.borderColor = connectColor;
   cynosureStatusDiv.style.color = connectColor;

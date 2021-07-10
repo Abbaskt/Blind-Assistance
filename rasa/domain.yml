@@ -4,6 +4,7 @@ intents:
   - greet
   - goodbye
   - navigate
+  - stop_navigation
   - affirm
   - deny
   - mood_great
@@ -32,7 +33,6 @@ responses:
 
   utter_start_navigation:
   - text: "Starting guided navigation."
-  - text: "Starting guided navigation now"
 
   utter_command_start_navigation:
   - custom:
@@ -40,8 +40,18 @@ responses:
         - text: "Starting guided navigation."
         - perform: "startNavigation()"
 
+  utter_stop_navigation:
+  - text: "Stopping navigation."
+
+  utter_command_stop_navigation:
+  - custom:
+      data:
+        - text: "Stopping guided navigation."
+        - perform: "stopNavigation()"
+
 actions:
   - action_start_navigate
+  - action_stop_navigate
 
 session_config:
   session_expiration_time: 60

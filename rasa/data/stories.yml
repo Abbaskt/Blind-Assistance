@@ -29,7 +29,12 @@ stories:
   - intent: deny
   - action: utter_goodbye
 
-- story: help user
+- story: navigate user
   steps:
   - intent: navigate
   - action: utter_command_start_navigation
+
+- story: stop navigation
+  steps:
+  - intent: stop_navigation
+  - action: utter_command_stop_navigation

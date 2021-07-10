@@ -34,9 +34,24 @@ class ActionStartNavigate(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         dispatcher.utter_message(
-          # template = "utter_command_start_navigation",
           text     = "Starting guided navigation.",
           perform  = "startNavigation()"
+        )
+
+        return []
+
+class ActionStopNavigate(Action):
+
+    def name(self) -> Text:
+        return "action_stop_navigate"
+
+    async def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        dispatcher.utter_message(
+          text     = "Stopping guided navigation.",
+          perform  = "stopNavigation()"
         )
 
         return []
