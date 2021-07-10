@@ -30,7 +30,7 @@ output_format = 'XVID'
 iou = 0.45
 score = 0.50
 count = False
-dont_show = True
+dont_show = False
 info = False
 crop = False
 plate = False
@@ -46,10 +46,11 @@ video_path = None
 interpreter = None
 input_details = None
 output_details = None
+infer = None
 
 def init_object_detector():
 
-    global config, session, STRIDES, ANCHORS, NUM_CLASS, XYSCALE, input_size, video_path, interpreter, input_details, output_details 
+    global infer,config, session, STRIDES, ANCHORS, NUM_CLASS, XYSCALE, input_size, video_path, interpreter, input_details, output_details 
     config = ConfigProto()
     config.gpu_options.allow_growth = True
     session = InteractiveSession(config=config)
@@ -63,7 +64,10 @@ def init_object_detector():
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-    # print(input_details)
+    # saved_model_loaded = tf.saved_model.load(
+    #             weights, tags=[tag_constants.SERVING])
+    # infer = saved_model_loaded.signatures['serving_default']
+    print(input_details)
     FD.init_face_detector()
     MD.init_mask_detector()
     print("Init successful")
@@ -82,9 +86,16 @@ def detect_object(frame_val):
     image_data = image_data[np.newaxis, ...].astype(np.float32)
     start_time = time.time()
 
+    # batch_data = tf.constant(image_data)
+    # pred_bbox = infer(batch_data)
+    # for key, value in pred_bbox.items():
+    #     boxes = value[:, :, 0:4]
+    #     pred_conf = value[:, :, 4:]
+
     interpreter.set_tensor(input_details[0]['index'], image_data)
     interpreter.invoke()
     pred = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+    # print(pred[0],", " ,pred[1], ", " , len(pred))
     boxes, pred_conf = filter_boxes(pred[0], pred[1], score_threshold=0.25,
                                             input_shape=tf.constant([input_size, input_size]))
 
@@ -160,20 +171,11 @@ def detect_object(frame_val):
 
     return retval
     
-# vid = cv2.VideoCapture(0)
 
-# init_object_detector()
+
+init_object_detector()
 # FD.init_face_detector()
 # MD.init_mask_detector()
 
-# while(True):
-#     return_value, frame = vid.read()
-#     if return_value:
-#        object_detector(frame)
-#     else:
-#         print('Video has ended or failed, try a different video format!')
-#         break
-#     if cv2.waitKey(1) & 0xFF == ord('q'): 
-#         break
-# cv2.destroyAllWindows()
+
 
