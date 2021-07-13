@@ -30,7 +30,7 @@ output_format = 'XVID'
 iou = 0.45
 score = 0.50
 count = False
-dont_show = False
+dont_show = True
 info = False
 crop = False
 plate = False
@@ -71,6 +71,9 @@ def init_object_detector():
     FD.init_face_detector()
     MD.init_mask_detector()
     print("Init successful")
+    vid = cv2.imread(r'object_detector\sample.jpg')
+    image = cv2.cvtColor(vid, cv2.COLOR_BGR2RGB )
+    detect_object(image)
 
 
 def detect_object(frame_val):
@@ -142,17 +145,18 @@ def detect_object(frame_val):
     # retval += str(class_name)
     try:
         mask_label, dist = MD.mask_dist(frame_val)
+        # dist = round(dist,2)
     except:
         mask_label = "no face"
     if mask_label=="no face":
         pass
     else:    
-        if class_name == "person":
+        if "person" in class_name:
             face_val = FD.detect_face(frame)
-            if face_val!="None":
-                retval = str(face_val) + " found with " +str(mask_label) + " "+dist+" ft away"
+            if str(face_val)!="None":
+                retval = str(face_val) + " found with " +str(mask_label) + " "+str(dist)+" ft away"
             else:
-                retval = "Unknown person" + "found with " +str(mask_label) + " "+dist+" ft away"
+                retval = "Unknown person found with " +str(mask_label) + " "+str(dist)+" ft away"
         else:
             if retval=="":
                 retval = "No object found in frame"

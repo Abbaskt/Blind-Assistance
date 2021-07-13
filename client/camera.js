@@ -24,7 +24,6 @@ var recognition = new SpeechRecognition();
 var Textbox = $('#chatInput');
 var Content = '';
 recognition.continuous = true;
-// recognition.lang = "kn-IN"
 recognition.start();
 
 var video = document.getElementById("videoElement");
@@ -56,10 +55,6 @@ recognition.onresult = function (event) {
   var transcript = event.results[current][0].transcript;
   Content = transcript;
   Textbox.val(Content);
-  // translate(Content,{from:"kn",to:"en"}).then(text =>{
-  //   Textbox.val(text);
-  // })
-  // Textbox.val(Content);
   sendChat();
 };
 

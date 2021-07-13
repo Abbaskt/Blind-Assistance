@@ -23,7 +23,7 @@ async def pingPong(sid, msg):
 @sio.event
 async def labelImage(sid, message):
 
-  print("sid = ", sid)
+  # print("sid = ", sid)
 
   startLoc = message.find("64,")+3
   imageData = message[startLoc:]

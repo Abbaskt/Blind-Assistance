@@ -115,7 +115,7 @@ def mask_dist(img):
       # cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
       # cv2.imshow('window',img)
       # cv2.waitKey(1)
-      return label, str(inches/12)
+      return label, round((inches/12),2)
 
 def init_mask_detector():
   global faceNet, maskNet
