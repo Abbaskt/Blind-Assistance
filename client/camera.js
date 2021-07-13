@@ -1,5 +1,4 @@
-// conda activate blindAsst && cd D:\src\Blind-Assistance\cynosure
-// require("dotenv").config()
+import "./dataStructure"
 
 const host            = "http://127.0.0.1"
 const cynosurePort    = "5678"
@@ -15,8 +14,8 @@ const rasaEndpoint     = host + ":" + rasaPort
 
 // TTS
 let speech = new SpeechSynthesisUtterance();
-speech.lang = "en";
 let voices = window.speechSynthesis.getVoices();
+speech.lang = "en";
 speech.voice = voices[1];
 
 // STT
@@ -49,6 +48,8 @@ var rasaLatencies    = [];
 var cynoTimesCounter = 0;
 var cynoStartTimes   = [];
 var cynoLatencies    = [];
+
+var speakQueue = new PriorityQueue();
 
 recognition.onresult = function (event) {
   var current = event.resultIndex;
@@ -147,8 +148,21 @@ function sendDataToServer(data) {
   cynoStartTimes.push(Date.now())
   cynosureSocket.emit('labelImage', data, (resp) => {
     cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
-    displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1])
+    displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1]);
+    speech.text = resp.text;
+    window.speechSynthesis.speak(speech);
+    speakQueue.push(resp.text)
   });
+}
+
+function test(){
+  testq = PriorityQueue();
+  testq.push("Randomg");
+  testq.push("stairs");
+  testq.push("Stopping guided navigation.");
+  testq.push("car");
+
+  console.log("Testq",  testq)
 }
 
 captureButton.addEventListener('click', () => {
@@ -204,6 +218,7 @@ cynosureSocket.on("disconnect", () => {
   cynosureStatusDiv.style.borderColor = disconnectColor;
   cynosureStatusDiv.style.color = disconnectColor;
   cynosureStatusDiv.style.boxShadow = "0px 0px 4px 1px " + disconnectColor;
+  test();
 });
 
 rasaSocket.on("connect", () => {
