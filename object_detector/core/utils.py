@@ -141,6 +141,7 @@ def draw_bbox(image, bboxes, info = False, counted_classes = None, show_label=Tr
     random.seed(None)
 
     out_boxes, out_scores, out_classes, num_boxes = bboxes
+    coor = None
     for i in range(num_boxes):
         if int(out_classes[i]) < 0 or int(out_classes[i]) > num_classes: continue
         coor = out_boxes[i]

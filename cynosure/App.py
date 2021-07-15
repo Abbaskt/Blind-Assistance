@@ -30,6 +30,7 @@ async def labelImage(sid, message):
 
   img = processImg(imageData)
   label = OD.detect_object(img)
+  print("label: ",label)
 
   return label
 

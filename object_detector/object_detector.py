@@ -48,6 +48,8 @@ input_details = None
 output_details = None
 infer = None
 
+person_details = {"name":None,"mask":None,"dist":None}
+
 def init_object_detector():
 
     global infer,config, session, STRIDES, ANCHORS, NUM_CLASS, XYSCALE, input_size, video_path, interpreter, input_details, output_details 
@@ -78,6 +80,7 @@ def init_object_detector():
 
 def detect_object(frame_val):
 
+    global person_details
     frame = frame_val
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(frame)
@@ -143,25 +146,31 @@ def detect_object(frame_val):
         image, class_name, object_coord = utils.draw_bbox(frame, pred_bbox, info, allowed_classes=allowed_classes)
     
     # retval += str(class_name)
+    print(class_name)
+    person_details = {"name":None,"mask":None,"dist":None}
     try:
-        mask_label, dist = MD.mask_dist(frame_val)
+        person_details["mask"], person_details["dist"] = MD.mask_dist(frame_val)
         # dist = round(dist,2)
     except:
-        mask_label = "no face"
-    if mask_label=="no face":
-        pass
-    else:    
-        if "person" in class_name:
-            face_val = FD.detect_face(frame)
-            if str(face_val)!="None":
-                retval = str(face_val) + " found with " +str(mask_label) + " "+str(dist)+" ft away"
-            else:
-                retval = "Unknown person found with " +str(mask_label) + " "+str(dist)+" ft away"
+        # person_details[mask] = "no face"
+        print("Exception in mask detection")
+    # if mask_label=="no face":
+    #     pass
+    # else:    
+    if class_name=="person":
+        person_details["name"] = str(FD.detect_face(frame))
+        if person_details["name"] and person_details["dist"]:
+            retval = person_details["name"] + " found with " +person_details["mask"] + " "+ str(person_details["dist"])+" ft away"
+        elif person_details["name"]:
+            retval = person_details["name"] + " found";
         else:
-            if retval=="":
-                retval = "No object found in frame"
-            else:
-                retval = str(class_name) + " found in frame"
+            retval = "Unknown person found"
+            print("Reached final else")
+    elif class_name=="":
+        retval = "No object found"
+    else:
+        print("Object found: ",class_name)
+        retval = str(class_name) + " found in frame"
             # retval = str(str(mask_val) + str(face_val))
 
     fps = 1.0 / (time.time() - start_time)
@@ -172,7 +181,7 @@ def detect_object(frame_val):
     if not dont_show:
         cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
         cv2.imshow("result", result)
-
+    print("retval: ",retval)
     return retval
     
 

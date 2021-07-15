@@ -1,4 +1,4 @@
-import "./dataStructure"
+// import "./dataStructure"
 
 const host            = "http://127.0.0.1"
 const cynosurePort    = "5678"
@@ -48,7 +48,7 @@ var cynoTimesCounter = 0;
 var cynoStartTimes   = [];
 var cynoLatencies    = [];
 
-var speakQueue = new PriorityQueue();
+// var speakQueue = new PriorityQueue();
 
 recognition.onresult = function (event) {
   var current = event.resultIndex;
@@ -144,9 +144,10 @@ function sendDataToServer(data) {
   cynosureSocket.emit('labelImage', data, (resp) => {
     cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
     displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1]);
-    speech.text = resp.text;
+    console.log("Test ",resp)
+    speech.text = resp;
     window.speechSynthesis.speak(speech);
-    speakQueue.push(resp.text)
+    // speakQueue.push(resp.text)
   });
 }
 
@@ -213,7 +214,7 @@ cynosureSocket.on("disconnect", () => {
   cynosureStatusDiv.style.borderColor = disconnectColor;
   cynosureStatusDiv.style.color = disconnectColor;
   cynosureStatusDiv.style.boxShadow = "0px 0px 4px 1px " + disconnectColor;
-  test();
+  // test();
 });
 
 rasaSocket.on("connect", () => {
