@@ -50,13 +50,9 @@ def detect_face(img):
     faces = locate_face(img)
 
     if(len(faces)==0):
-        print("no face")
-        return
+        return "Person"
 
     for face in faces:
-        # face = Image.fromarray(face)
-        # face = face.convert('RGB')
-        # face = face.resize(required_size)
 
         face_array = asarray(face)
         test_embedding = get_embeddings(face_array)
@@ -64,8 +60,7 @@ def detect_face(img):
 
         yhat_class = predict_model.predict(samples)
         yhat_prob = predict_model.predict_proba(samples)
-        # print(yhat_class,yhat_prob*100)
-        # print(face_names[yhat_class[0]])
+
         return str(face_names[yhat_class[0]])
 
 def init_face_detector():

@@ -28,7 +28,7 @@ while True:
         count += 1
 
         # Save the captured image into the datasets folder
-        cv2.imwrite("<Enter the path where you want to store the images>/User." + str(face_id) + '.' + str(count) + ".jpg", gray[y:y + h, x:x + w]) #It will store as User1.1.jpg = First user (User.1) First image (User.1.1) and so on.
+        cv2.imwrite("./User." + str(face_id) + '.' + str(count) + ".jpg", gray[y:y + h, x:x + w]) #It will store as User1.1.jpg = First user (User.1) First image (User.1.1) and so on.
 
         cv2.imshow('image', img)
 

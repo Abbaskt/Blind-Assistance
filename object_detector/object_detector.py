@@ -146,14 +146,23 @@ def detect_object(frame_val):
         image, class_name, object_coord = utils.draw_bbox(frame, pred_bbox, info, allowed_classes=allowed_classes)
     
     # retval += str(class_name)
-    print(class_name)
-    person_details = {"name":None,"mask":None,"dist":None}
+    # print(class_name)
+
+    person_details = {"name":None,"mask":None,"dist":None,"move_direction":None}
+
+    try:
+        xmin, xmax = object_coord[0], object_coord[2]
+        print(xmin,xmax)
+    except:
+        pass
+
     try:
         person_details["mask"], person_details["dist"] = MD.mask_dist(frame_val)
         # dist = round(dist,2)
     except:
         # person_details[mask] = "no face"
-        print("Exception in mask detection")
+        # print("Exception in mask detection")
+        pass
     # if mask_label=="no face":
     #     pass
     # else:    
@@ -164,12 +173,13 @@ def detect_object(frame_val):
         elif person_details["name"]:
             retval = person_details["name"] + " found";
         else:
-            retval = "Unknown person found"
-            print("Reached final else")
+            retval = "Person found"
+            # print("Reached final else")
+
     elif class_name=="":
         retval = "No object found"
     else:
-        print("Object found: ",class_name)
+        # print("Object found: ",class_name)
         retval = str(class_name) + " found in frame"
             # retval = str(str(mask_val) + str(face_val))
 
@@ -181,7 +191,7 @@ def detect_object(frame_val):
     if not dont_show:
         cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
         cv2.imshow("result", result)
-    print("retval: ",retval)
+    # print("retval: ",retval)
     return retval
     
 

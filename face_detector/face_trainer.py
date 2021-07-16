@@ -8,7 +8,7 @@ import joblib
 
 model = load_model("./Classifiers/facenet_keras.h5",compile=False)
 dataset_path = "./datasets"
-ids = ['Anirudh','Ekansh']
+ids = ['Abbas','Allen','Allen','Anirudh','Anusha','Ekansh','Jawad','Jawad']
 face_sample = []
 face_id = []
 required_size = (160,160)
