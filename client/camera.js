@@ -5,7 +5,7 @@ const disconnectColor = "#ff0000"
 const connectColor    = "#30db5d"
 const fps             = 1
 const timeInterval    = 1000 / fps
-const respLength      = 5
+const respLength      = 15
 var top = 0;
 const parent = i => ((i + 1) >>> 1) - 1;
 const left = i => (i << 1) + 1;
@@ -223,9 +223,10 @@ function sendDataToServer(data) {
   cynoStartTimes.push(Date.now())
   cynosureSocket.emit('labelImage', data, (resp) => {
     cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
-    displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1]);
-    console.log("Test ",resp)
-    speech.text = resp;
+    respText = "Label: ", resp.label + " Location: " + resp.location + " Distance: " + resp.distance
+    displayResponse("Cynosure", respText, cynoLatencies[cynoTimesCounter-1]);
+    console.log("Test response is ",resp)
+    speech.text = resp.label;
     window.speechSynthesis.speak(speech);
     // speakQueue.push(resp.text)
   });
