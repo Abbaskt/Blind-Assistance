@@ -23,16 +23,18 @@ async def pingPong(sid, msg):
 @sio.event
 async def labelImage(sid, message):
 
-  # print("sid = ", sid)
-
   startLoc = message.find("64,")+3
   imageData = message[startLoc:]
 
   img = processImg(imageData)
   label = OD.detect_object(img)
+  location = "Left"
+  distance = "1.3"
+
   print("label: ",label)
 
-  return label
+  respObject = {"label" : label, "location" : location, "distance" : distance}
+  return respObject
 
 def processImg(imageData):
   jpg_original = base64.b64decode(imageData)
