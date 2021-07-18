@@ -29,7 +29,7 @@ output = None
 output_format = 'XVID'
 iou = 0.45
 score = 0.50
-count = False
+count = True
 dont_show = True
 info = False
 crop = False
@@ -133,18 +133,37 @@ def detect_object(frame_val):
     allowed_classes = list(class_names.values())
     
     # custom allowed classes (uncomment line below to allow detections for only people)
-    #allowed_classes = ['person']
-
+    # allowed_classes = ['person']
+    # print(count)
     if count:
         # count objects found
         counted_classes = count_objects(pred_bbox, by_class = False, allowed_classes=allowed_classes)
         # loop through dict and print
         for key, value in counted_classes.items():
-            print("Number of {}s: {}".format(key, value))
+            print("Number of {}s: {}".format(key, value))            
         image, class_name, object_coord = utils.draw_bbox(frame, pred_bbox, info, counted_classes, allowed_classes=allowed_classes)
+        print("Number of objects in frame: ", pred_bbox[3])
     else:
         image, class_name, object_coord = utils.draw_bbox(frame, pred_bbox, info, allowed_classes=allowed_classes)
     
+    classes_names_list = read_class_names(cfg.YOLO.CLASSES)
+    no_objects = pred_bbox[3]
+    confidence_arr = pred_bbox[1]
+    bbox_arr = pred_bbox[0]
+    class_label_no = pred_bbox[2]
+    class_label = []
+    count_iter = 0
+    # print("Pred BBOX: ", pred_bbox[0][0], pred_bbox[1][0], pred_bbox[2][0], pred_bbox[3])
+    # print(pred_bbox)
+    print("Start of new frame")
+    while count_iter<no_objects:
+        class_label.append(classes_names_list[int(class_label_no[count_iter])])
+        print("Object label = ", class_label[count_iter])
+        print("Object confidence: ", confidence_arr[count_iter])
+        print(" Object found at:", bbox_arr[count_iter])
+        count_iter += 1
+    print("End of new frame")
+
     # retval += str(class_name)
     # print(class_name)
 
