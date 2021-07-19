@@ -48,8 +48,6 @@ input_details = None
 output_details = None
 infer = None
 
-person_details = {"name":None,"mask":None,"dist":None}
-
 def init_object_detector():
 
     global infer,config, session, STRIDES, ANCHORS, NUM_CLASS, XYSCALE, input_size, video_path, interpreter, input_details, output_details 
@@ -80,7 +78,7 @@ def init_object_detector():
 
 def detect_object(frame_val):
 
-    global person_details
+    objects_found = []
     frame = frame_val
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(frame)
@@ -139,79 +137,70 @@ def detect_object(frame_val):
         # count objects found
         counted_classes = count_objects(pred_bbox, by_class = False, allowed_classes=allowed_classes)
         # loop through dict and print
-        for key, value in counted_classes.items():
-            print("Number of {}s: {}".format(key, value))            
+        # for key, value in counted_classes.items():
+        #     print("Number of {}s: {}".format(key, value))            
         image, class_name, object_coord = utils.draw_bbox(frame, pred_bbox, info, counted_classes, allowed_classes=allowed_classes)
-        print("Number of objects in frame: ", pred_bbox[3])
+        # print("Number of objects in frame: ", pred_bbox[3])
     else:
         image, class_name, object_coord = utils.draw_bbox(frame, pred_bbox, info, allowed_classes=allowed_classes)
     
     classes_names_list = read_class_names(cfg.YOLO.CLASSES)
-    no_objects = pred_bbox[3]
-    confidence_arr = pred_bbox[1]
-    bbox_arr = pred_bbox[0]
-    class_label_no = pred_bbox[2]
+    bbox_arr, confidence_arr, class_label_no, no_objects = pred_bbox[0], pred_bbox[1], pred_bbox[2], pred_bbox[3]
     class_label = []
     count_iter = 0
     # print("Pred BBOX: ", pred_bbox[0][0], pred_bbox[1][0], pred_bbox[2][0], pred_bbox[3])
     # print(pred_bbox)
-    print("Start of new frame")
+    # print("Start of new frame")
+
     while count_iter<no_objects:
+        object_details = {"object":None,"person_name":None,"mask":None,"distance":None,"location":None}
         class_label.append(classes_names_list[int(class_label_no[count_iter])])
-        print("Object label = ", class_label[count_iter])
-        print("Object confidence: ", confidence_arr[count_iter])
-        print(" Object found at:", bbox_arr[count_iter])
-        count_iter += 1
-    print("End of new frame")
+        # print("Object label = ", class_label[count_iter])
+        # print("Object confidence: ", confidence_arr[count_iter])
+        # print(" Object found at:", bbox_arr[count_iter])
 
-    # retval += str(class_name)
-    # print(class_name)
+        object_details["object"] = class_label[count_iter]
+        object_confidence = confidence_arr[count_iter]
+        object_bbox = bbox_arr[count_iter]
 
-    person_details = {"name":None,"mask":None,"dist":None,"move_direction":None}
+        xmin,xmax = object_bbox[0],object_bbox[2]
+        object_mid_position = (xmin+xmax)/2
 
-    try:
-        xmin, xmax = object_coord[0], object_coord[2]
-        print(xmin,xmax)
-    except:
-        pass
-
-    try:
-        person_details["mask"], person_details["dist"] = MD.mask_dist(frame_val)
-        # dist = round(dist,2)
-    except:
-        # person_details[mask] = "no face"
-        # print("Exception in mask detection")
-        pass
-    # if mask_label=="no face":
-    #     pass
-    # else:    
-    if class_name=="person":
-        person_details["name"] = str(FD.detect_face(frame))
-        if person_details["name"] and person_details["dist"]:
-            retval = person_details["name"] + " found with " +person_details["mask"] + " "+ str(person_details["dist"])+" ft away"
-        elif person_details["name"]:
-            retval = person_details["name"] + " found";
+        if(object_mid_position <= 105):
+            object_details["location"] = "left"
+        elif(object_mid_position >= 210):
+            object_details["location"] = "right"
         else:
-            retval = "Person found"
-            # print("Reached final else")
+            object_details["location"] = "center"
 
-    elif class_name=="":
-        retval = "No object found"
-    else:
-        # print("Object found: ",class_name)
-        retval = str(class_name) + " found in frame"
-            # retval = str(str(mask_val) + str(face_val))
+        if(object_details["object"] == "person"):
+            try:
+                object_details["mask"], object_details["distance"] = MD.mask_dist(frame_val)
+            except:
+                # person_details[mask] = "no face"
+                # print("Exception in mask detection")
+                pass
 
-    fps = 1.0 / (time.time() - start_time)
-    # print("FPS: %.2f" % fps)
-    result = np.asarray(image)
-    result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            object_details["person_name"] = str(FD.detect_face(frame))
+
+        objects_found.append(object_details)
+        count_iter += 1
+
+    # print("End of new frame")
+
+    # fps = 1.0 / (time.time() - start_time)
+    # # print("FPS: %.2f" % fps)
+    # result = np.asarray(image)
+    # result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     
-    if not dont_show:
-        cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
-        cv2.imshow("result", result)
-    # print("retval: ",retval)
-    return retval
+    # if not dont_show:
+    #     cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
+    #     cv2.imshow("result", result)
+
+    print("retval: ")
+    print(objects_found)
+
+    return objects_found
     
 
 

@@ -27,13 +27,8 @@ async def labelImage(sid, message):
   imageData = message[startLoc:]
 
   img = processImg(imageData)
-  label = OD.detect_object(img)
-  location = "Left"
-  distance = "1.3"
+  respObject = OD.detect_object(img)
 
-  print("label: ",label)
-
-  respObject = {"label" : label, "location" : location, "distance" : distance}
   return respObject
 
 def processImg(imageData):
