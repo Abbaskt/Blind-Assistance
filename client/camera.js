@@ -1,11 +1,12 @@
-const host            = "http://127.0.0.1"
-const cynosurePort    = "5678"
-const rasaPort        = "5005"
-const disconnectColor = "#ff0000"
-const connectColor    = "#30db5d"
-const fps             = 1
-const timeInterval    = 1000 / fps
-const respLength      = 15
+const host             = "http://127.0.0.1"
+const cynosurePort     = "5678"
+const rasaPort         = "5005"
+const disconnectColor  = "#ff0000"
+const connectColor     = "#30db5d"
+const fps              = 1
+const timeInterval     = 1000 / fps
+const respLength       = 15
+const latencyAvgWindow = 5
 var top = 0;
 const parent = i => ((i + 1) >>> 1) - 1;
 const left = i => (i << 1) + 1;
@@ -35,7 +36,9 @@ var chatInput     = document.getElementById('chatInput');
 var chatButton    = document.getElementById('chatSendBtn');
 
 var cynosureStatusDiv = document.getElementById('cynosureStatus');
+var cynosureLatency   = document.getElementById('cynoLatency');
 var rasaStatusDiv     = document.getElementById('rasaStatus');
+var rasaLatency       = document.getElementById('rasaLatency');
 
 var isCapturing       = false
 var continousSend
@@ -159,7 +162,7 @@ function pingPong() {
   pingMsg = "PING"
   cynoStartTimes.push(Date.now())
   cynosureSocket.emit('pingPong', pingMsg, (resp) => {
-    cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
+    updateCynoLatency();
     displayResponse("Cynosure", resp, cynoLatencies[cynoTimesCounter-1])
   });
 }
@@ -179,7 +182,7 @@ function sendChat() {
 
 rasaSocket.on("bot_uttered", (resp) => {
   console.log("Received Response from bot ", resp)
-  rasaLatencies.push(Date.now() - rasaStartTimes[rasaTimesCounter++]);
+  updateRasaLatency();
   obj = undefined
   try{
     obj = Object.assign({}, ...resp)
@@ -219,16 +222,31 @@ function getStillImage() {
 }
 
 function sendDataToServer(data) {
-  console.log("Sending image to server")
   cynoStartTimes.push(Date.now())
   cynosureSocket.emit('labelImage', data, (resp) => {
-    cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
-    respText = "Label: ", resp.label + " Location: " + resp.location + " Distance: " + resp.distance
-    displayResponse("Cynosure", respText, cynoLatencies[cynoTimesCounter-1]);
-    console.log("Test response is ",resp)
-    speech.text = resp.label;
-    window.speechSynthesis.speak(speech);
+    console.log("Server response is ",resp)
+    updateCynoLatency();
+    if(resp[0]){
+      displayResponse("Cynosure", resp[0], cynoLatencies[cynoTimesCounter-1]);
+    }
+    if(resp.length != 0){
+      obj = resp[0]
+      if(obj.object == "person"){
+        speech.text =  
+          obj.person_name 
+          + " found with " + obj.mask 
+          + " " + obj.distance + " ft away"
+          + " on the " + obj.location
+      }
+      else{
+        speech.text =  
+          obj.object + " found"
+      }
+      
+      window.speechSynthesis.speak(speech);
     // speakQueue.push(resp.text)
+    }
+    
   });
 }
 
@@ -267,11 +285,16 @@ if (navigator.mediaDevices.getUserMedia) {
     });
 }
 
+chatInput.addEventListener("keyup", function(event) {
+  if (event.key === "Enter") {
+    chatSendBtn.click();
+  }
+});
 
-function displayResponse(serverName, text, latency) {
+function displayResponse(serverName, displayObj, latency) {
   var responseUL = document.getElementById("serverResp")
   var item       = document.createElement("li");
-  var respText   = serverName +" response: " + text + " | Latency = " + latency + "ms"
+  var respText   = serverName + " response: " + JSON.stringify(displayObj) + " | Latency = " + latency + "ms"
 
   item.appendChild(document.createTextNode(respText));
   responseUL.appendChild(item)
@@ -298,6 +321,23 @@ function comparePriorities (a, b){
   priorityA > priorityB
 }
 
+function updateCynoLatency(){
+  cynoLatencies.push(Date.now() - cynoStartTimes[cynoTimesCounter++]);
+  let avgLatency = getAvgOfN(rasaLatencies, latencyAvgWindow)
+  cynosureLatency.innerHTML = avgLatency + " ms"
+}
+
+function updateRasaLatency(){
+  rasaLatencies.push(Date.now() - rasaStartTimes[rasaTimesCounter++]);
+  let avgLatency = getAvgOfN(rasaLatencies, latencyAvgWindow)
+  rasaLatency.innerHTML = avgLatency + " ms"
+}
+
+function getAvgOfN(arr, n){
+  let avgWindow  = arr.slice(-n)
+  let avgLatency = (avgWindow.reduce( (x, y) => x+y, 0) / avgWindow.length).toFixed(2)
+  return avgLatency
+}
 cynosureSocket.on("connect", () => {
   console.log("cynosureSocket ID :", cynosureSocket.id);
   // captureButton.disabled = false;
