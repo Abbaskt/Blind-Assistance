@@ -1,98 +1,65 @@
-const top = 0;
-const parent = i => ((i + 1) >>> 1) - 1;
-const left = i => (i << 1) + 1;
-const right = i => (i + 1) << 1;
+export { QElement, PriorityQueue };
+
+class QElement {
+  constructor(element, priority) {
+    this.element = element;
+    this.priority = priority;
+  }
+}
 
 class PriorityQueue {
-  constructor(comparator = (a, b) => a > b) {
-    this._heap = [];
-    this._comparator = comparePriorities;
+  constructor() {
+    this.items = [];
   }
-  size() {
-    return this._heap.length;
+
+  enqueue(objStr) {
+    var qElement = getQElementFromStr(objStr);
+    var added = false;
+
+    for (var i = 0; i < this.items.length; i++) {
+      if (this.items[i].priority < qElement.priority) {
+        this.items.splice(i, 0, qElement);
+        added = true;
+        break;
+      }
+    }
+
+    if (!added) {
+      this.items.push(qElement);
+    }
   }
+
+  dequeue() {
+    if (this.isEmpty())
+      return "Underflow";
+    return this.items.shift();
+  }
+
   isEmpty() {
-    return this.size() == 0;
-  }
-  peek() {
-    return this._heap[top];
-  }
-  push(...values) {
-    values.forEach(value => {
-      this._heap.push(value);
-      this._siftUp();
-    });
-    return this.size();
-  }
-  pop() {
-    const poppedValue = this.peek();
-    const bottom = this.size() - 1;
-    if (bottom > top) {
-      this._swap(top, bottom);
-    }
-    this._heap.pop();
-    this._siftDown();
-    return poppedValue;
-  }
-  replace(value) {
-    const replacedValue = this.peek();
-    this._heap[top] = value;
-    this._siftDown();
-    return replacedValue;
-  }
-  _greater(i, j) {
-    return this._comparator(this._heap[i], this._heap[j]);
-  }
-  _swap(i, j) {
-    [this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];
-  }
-  _siftUp() {
-    let node = this.size() - 1;
-    while (node > top && this._greater(node, parent(node))) {
-      this._swap(node, parent(node));
-      node = parent(node);
-    }
-  }
-  _siftDown() {
-    let node = top;
-    while (
-      (left(node) < this.size() && this._greater(left(node), node)) ||
-      (right(node) < this.size() && this._greater(right(node), node))
-    ) {
-      let maxChild = (right(node) < this.size() && this._greater(right(node), left(node))) ? right(node) : left(node);
-      this._swap(node, maxChild);
-      node = maxChild;
-    }
+    return this.items.length == 0;
   }
 }
 
-function comparePriorities (a, b){
-  priorityA = 0;
-  priorityB = 0;
-  for(i = 0; i < priorityOrder.length; i++){
-    if(a == priorityOrder[i][0]){
-      priorityA = priorityOrder[i][1]
-    }
-    if(b == priorityOrder[i][0]){
-      priorityB = priorityOrder[i][1]
-    }
-    if(priorityA != 0 && priorityB != 0){
-      break;
-    }
-  }
-  priorityA > priorityB
-}
-
-priorityOrder = [
-    ["Stopping guided navigation.", 9]
-  , ["car",          5] 
-  , ["motorcycle",   5] 
-  , ["person",       4]
-  , ["pothole",      4]
-  , ["door",         4]
-  , ["cow",          2]
-  , ["dog",          2]
-  , ["doorhandle",   2]
+let priorityOrder = [
+  ["Stopping guided navigation.", 9]
+  , ["car", 5]
+  , ["motorcycle", 5]
+  , ["person", 4]
+  , ["pothole", 4]
+  , ["door", 4]
+  , ["cow", 2]
+  , ["dog", 2]
+  , ["doorhandle", 2]
   , ["traffic_cone", 2]
-  , ["stairs",       2]
+  , ["stairs", 2]
 ]
+
+function getQElementFromStr(str) {
+  for (let i = 0; i < priorityOrder.length; i++) {
+    if (str == priorityOrder[i][0]) {
+      return new QElement(str, priorityOrder[i][1]);
+    }
+  }
+  console.warn("Couldn't find Element ", str, " in priorityOrder")
+  return new QElement(str, 0);
+}

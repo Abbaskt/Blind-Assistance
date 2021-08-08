@@ -33,16 +33,16 @@
   <button id="capture" disabled>Start Capture</button>
   <canvas id="canvas" width=320 height=240 hidden></canvas>
 
-  <button type="button" id="pingBtn" onclick="pingPong()" disabled>PING Server</button>
+  <button type="button" id="pingBtn" disabled>PING Server</button>
   <input type="text" id="chatInput" disabled>
-  <button type="button" id="chatSendBtn" onclick="sendChat()" disabled>Send</button>
+  <button type="button" id="chatSendBtn" disabled hidden>Send</button>
   <br><br>
 
   <ul id="serverResp"></ul>
   <script src="./node_modules/socket.io-client/dist/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/translate@1/translate.min.js"></script>
-  <script src="camera.js"></script>
+  <script type="module" src="camera.js"></script>
 </body>
 
 </html>
