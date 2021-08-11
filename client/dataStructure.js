@@ -1,8 +1,9 @@
 export { QElement, PriorityQueue };
 
 class QElement {
-  constructor(element, priority) {
-    this.element = element;
+  constructor(key, text, priority) {
+    this.key = key;
+    this.text = text;
     this.priority = priority;
   }
 }
@@ -12,8 +13,8 @@ class PriorityQueue {
     this.items = [];
   }
 
-  enqueue(objStr) {
-    var qElement = getQElementFromStr(objStr);
+  enqueue(key, text) {
+    var qElement = getQElementFromStr(key, text);
     var added = false;
 
     for (var i = 0; i < this.items.length; i++) {
@@ -31,17 +32,21 @@ class PriorityQueue {
 
   dequeue() {
     if (this.isEmpty())
-      return "Underflow";
+      return null;
     return this.items.shift();
   }
 
   isEmpty() {
     return this.items.length == 0;
   }
+
+  clear(){
+    this.items = [];
+  }
 }
 
 let priorityOrder = [
-  ["Stopping guided navigation.", 10]
+  ["rasaResp", 10]
   , ["car", 9]
   , ["motorcycle", 8]
   , ["person", 7]
@@ -54,12 +59,12 @@ let priorityOrder = [
   , ["stairs", 1]
 ]
 
-function getQElementFromStr(str) {
+function getQElementFromStr(key, text) {
   for (let i = 0; i < priorityOrder.length; i++) {
-    if (str == priorityOrder[i][0]) {
-      return new QElement(str, priorityOrder[i][1]);
+    if (key == priorityOrder[i][0]) {
+      return new QElement(key, text, priorityOrder[i][1]);
     }
   }
-  console.warn("Couldn't find Element ", str, " in priorityOrder")
-  return new QElement(str, 0);
+  console.warn("Couldn't find Element ", key, " in priorityOrder")
+  return new QElement(key, text, 0);
 }

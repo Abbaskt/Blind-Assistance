@@ -52,8 +52,8 @@ var cynoStartTimes = [];
 var cynoLatencies = [];
 
 var prevLabelledImage;
-
-var shouldlistencyno = false;
+var shouldListenToCyno = false;
+var priorityQ = new DS.PriorityQueue();
 
 recognition.onresult = function (event) {
   var current = event.resultIndex;
@@ -114,7 +114,7 @@ rasaSocket.on("bot_uttered", (resp) => {
   }
 
   displayResponse("Rasa", obj.text, rasaLatencies[rasaTimesCounter - 1])
-  speaktext(obj.text)
+  addToSpeakQ("rasaResp", obj.text)
   // Textbox.val("")
   try {
     eval(obj.perform)
@@ -159,7 +159,7 @@ function hasLabelChanged(newObj) {
 
 function sendDataToServer(data) {
   cynoStartTimes.push(Date.now())
-  if (shouldlistencyno) {
+  if (shouldListenToCyno) {
     cynosureSocket.emit('labelImage', data, (resp) => {
       console.log("Server response is ", resp)
       updateCynoLatency();
@@ -167,28 +167,31 @@ function sendDataToServer(data) {
         displayResponse("Cynosure", resp[0], cynoLatencies[cynoTimesCounter - 1]);
       }
       if (resp.length != 0) {
-        let obj = resp[0]
-
-        if (hasLabelChanged(obj)) {
-          prevLabelledImage = obj;
-          let str = ""
-          if (obj.object == "person") {
-            str =
-              obj.person_name
-              + " found with " + obj.mask
-              + " " + obj.distance + " ft away"
-              + " on the " + obj.location
+        resp.forEach(obj => {
+          if (hasLabelChanged(obj)) {
+            prevLabelledImage = obj;
+            let str = ""
+            if (obj.object == "person") {
+              if (obj.mask === null || obj.distance === null || obj.location === null) {
+                str =
+                  obj.person_name + " found"
+              }
+              else {
+                str =
+                  obj.person_name
+                  + " found with " + obj.mask
+                  + " " + obj.distance + " ft away"
+                  + " on the " + obj.location
+              }
+            }
+            else {
+              str =
+                obj.object + " found"
+            }
+            addToSpeakQ(obj.object, str)
           }
-          else {
-            str =
-              obj.object + " found"
-          }
-          speaktext(str)
-        }
-
-
+        });
       }
-
     });
   }
 }
@@ -261,25 +264,40 @@ function testPriorityQ() {
   console.dir((sampleQ))
 }
 
-function speaktext(str) {
+function addToSpeakQ(key, text) {
 
-  if (str == "Stopping guided navigation.") {
+  if (text == "Stopping guided navigation.") {
     window.speechSynthesis.cancel()
-    shouldlistencyno = false
+    shouldListenToCyno = false
   }
 
-  if (str == "Starting guided navigation."){
-    shouldlistencyno = true
+  if (text == "Starting guided navigation.") {
+    shouldListenToCyno = true
   }
 
-  speech.text = str
+  priorityQ.enqueue(key, text);
 
-  window.speechSynthesis.speak(speech);
+  if (priorityQ.items.length == 1) {
+    speakFromPriorityQ()
+  }
+}
 
+function speakFromPriorityQ() {
+  var nextObj = priorityQ.dequeue();
 
+  if (nextObj != null) {
+    if (nextObj.text == "Stopping guided navigation.") {
+      priorityQ.clear();
+    }
+    console.log("speakFromPriorityQ nextObj", nextObj)
+    speech.text = nextObj.text;
+    window.speechSynthesis.speak(speech);
+  }
 }
 
 /* ----------------------------- EVENT LISTENERS ---------------------------- */
+
+speech.onend = speakFromPriorityQ
 
 chatInput.addEventListener("keyup", function (event) {
   if (event.key === "Enter") {
