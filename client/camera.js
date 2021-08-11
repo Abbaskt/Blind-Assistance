@@ -7,7 +7,7 @@ const disconnectColor = "#ff0000"
 const connectColor = "#30db5d"
 const fps = 1
 const timeInterval = 1000 / fps
-const respLength = 15
+const respLength = 10
 const latencyAvgWindow = 5
 
 const cynosureEndpoint = host + ":" + cynosurePort
@@ -50,6 +50,10 @@ var rasaLatencies = [];
 var cynoTimesCounter = 0;
 var cynoStartTimes = [];
 var cynoLatencies = [];
+
+var prevLabelledImage;
+
+var shouldlistencyno = false;
 
 recognition.onresult = function (event) {
   var current = event.resultIndex;
@@ -110,8 +114,7 @@ rasaSocket.on("bot_uttered", (resp) => {
   }
 
   displayResponse("Rasa", obj.text, rasaLatencies[rasaTimesCounter - 1])
-  speech.text = obj.text;
-  window.speechSynthesis.speak(speech);
+  speaktext(obj.text)
   // Textbox.val("")
   try {
     eval(obj.perform)
@@ -139,32 +142,55 @@ function getStillImage() {
   return canvas.toDataURL("image/png");
 }
 
+function hasLabelChanged(newObj) {
+  if (prevLabelledImage === undefined) {
+    return (true)
+  }
+  if (newObj != undefined) {
+    return (newObj.object != prevLabelledImage.object)
+      || (newObj.person_name != prevLabelledImage.person_name)
+      || (newObj.location != prevLabelledImage.location)
+  }
+  else {
+    // prevLabelledImage = newObj
+    return false
+  }
+}
+
 function sendDataToServer(data) {
   cynoStartTimes.push(Date.now())
-  cynosureSocket.emit('labelImage', data, (resp) => {
-    console.log("Server response is ", resp)
-    updateCynoLatency();
-    if (resp[0]) {
-      displayResponse("Cynosure", resp[0], cynoLatencies[cynoTimesCounter - 1]);
-    }
-    if (resp.length != 0) {
-      let obj = resp[0]
-      if (obj.object == "person") {
-        speech.text =
-          obj.person_name
-          + " found with " + obj.mask
-          + " " + obj.distance + " ft away"
-          + " on the " + obj.location
+  if (shouldlistencyno) {
+    cynosureSocket.emit('labelImage', data, (resp) => {
+      console.log("Server response is ", resp)
+      updateCynoLatency();
+      if (resp[0]) {
+        displayResponse("Cynosure", resp[0], cynoLatencies[cynoTimesCounter - 1]);
       }
-      else {
-        speech.text =
-          obj.object + " found"
+      if (resp.length != 0) {
+        let obj = resp[0]
+
+        if (hasLabelChanged(obj)) {
+          prevLabelledImage = obj;
+          let str = ""
+          if (obj.object == "person") {
+            str =
+              obj.person_name
+              + " found with " + obj.mask
+              + " " + obj.distance + " ft away"
+              + " on the " + obj.location
+          }
+          else {
+            str =
+              obj.object + " found"
+          }
+          speaktext(str)
+        }
+
+
       }
 
-      window.speechSynthesis.speak(speech);
-    }
-
-  });
+    });
+  }
 }
 
 captureButton.addEventListener('click', () => {
@@ -197,7 +223,7 @@ function displayResponse(serverName, displayObj, latency) {
   var respText = serverName + " response: " + JSON.stringify(displayObj) + " | Latency = " + latency + "ms"
 
   item.appendChild(document.createTextNode(respText));
-  responseUL.appendChild(item)
+  // responseUL.appendChild(item)
 
   if (responseUL.children.length > respLength) {
     responseUL.removeChild(responseUL.children[0]);
@@ -230,20 +256,40 @@ function testPriorityQ() {
   sampleQ.enqueue("motorcycle");
   sampleQ.enqueue("Stopping guided navigation.");
 
+
+
   console.dir((sampleQ))
+}
+
+function speaktext(str) {
+
+  if (str == "Stopping guided navigation.") {
+    window.speechSynthesis.cancel()
+    shouldlistencyno = false
+  }
+
+  if (str == "Starting guided navigation."){
+    shouldlistencyno = true
+  }
+
+  speech.text = str
+
+  window.speechSynthesis.speak(speech);
+
+
 }
 
 /* ----------------------------- EVENT LISTENERS ---------------------------- */
 
 chatInput.addEventListener("keyup", function (event) {
   if (event.key === "Enter") {
-    chatSendBtn.click();
+    sendChat()
   }
 });
 
-pingButton.addEventListener('click', () => {pingPong()});
+pingButton.addEventListener('click', () => { pingPong() });
 
-chatButton.addEventListener('click', () => {sendChat()});
+chatButton.addEventListener('click', () => { sendChat() });
 
 cynosureSocket.on("connect", () => {
   console.log("cynosureSocket ID :", cynosureSocket.id);
@@ -255,7 +301,8 @@ cynosureSocket.on("connect", () => {
 });
 
 cynosureSocket.on("disconnect", () => {
-  captureButton.disabled = true;
+  console.log("Disconnected cynosure socket")
+  cynosureSocket.connect();
   pingButton.disabled = true;
   cynosureStatusDiv.style.borderColor = disconnectColor;
   cynosureStatusDiv.style.color = disconnectColor;

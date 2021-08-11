@@ -41,17 +41,17 @@ class PriorityQueue {
 }
 
 let priorityOrder = [
-  ["Stopping guided navigation.", 9]
-  , ["car", 5]
-  , ["motorcycle", 5]
-  , ["person", 4]
-  , ["pothole", 4]
-  , ["door", 4]
-  , ["cow", 2]
-  , ["dog", 2]
-  , ["doorhandle", 2]
+  ["Stopping guided navigation.", 10]
+  , ["car", 9]
+  , ["motorcycle", 8]
+  , ["person", 7]
+  , ["pothole", 6]
+  , ["door", 6]
+  , ["cow", 5]
+  , ["dog", 4]
+  , ["doorhandle", 3]
   , ["traffic_cone", 2]
-  , ["stairs", 2]
+  , ["stairs", 1]
 ]
 
 function getQElementFromStr(str) {

@@ -152,7 +152,7 @@ def detect_object(frame_val):
     # print(pred_bbox)
     # print("Start of new frame")
 
-    while count_iter<no_objects:
+    while count_iter<no_objects and count_iter<2:
         object_details = {"object":None,"person_name":None,"mask":None,"distance":None,"location":None}
         class_label.append(classes_names_list[int(class_label_no[count_iter])])
         # print("Object label = ", class_label[count_iter])
